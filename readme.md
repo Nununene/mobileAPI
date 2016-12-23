@@ -4,7 +4,7 @@ This php API deployed on Raspberry Pi and works with Android app [Remote Control
 
 ## Enviorment
 
-![enviorment chart](https://cloud.githubusercontent.com/assets/7614818/21301655/83bfbe56-c5ea-11e6-93ac-50d605297cb5.png)
+![enviorment chart](https://cloud.githubusercontent.com/assets/7614818/21448596/91189216-c91f-11e6-9674-0f5946f59978.png)
 
 ## Features
 
