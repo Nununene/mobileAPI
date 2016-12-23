@@ -8,7 +8,7 @@
 // ======= Edit these configurations =======
 // RF code for sending
 $rfCode = '6675618';
-// Change path if 443Util in different path
+// Change path if 433Util in different path
 $binaryPath = '/home/pi/433Utils/RPi_utils/codesend';
 
 // ======= Users =======
@@ -65,7 +65,7 @@ switch($action){
     echo 1;
     break;
   case 'open':
-    // code 'open' executes send defined rfCode via 443Utils
+    // code 'open' executes send defined rfCode via 433Utils
     echo 1;
     $cmd = '';
     if($useSudo){

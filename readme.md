@@ -8,7 +8,7 @@ This php API deployed on Raspberry Pi and works with Android app [Remote Control
 
 ## Features
 
-- Receive Web HTTP Calls and send RF-443 wireless signal.
+- Receive Web HTTP Calls and send RF433Mhz wireless signal.
 - Account and password.
 - User defines own Action code
 - Extensible and simple PHP code
@@ -16,7 +16,7 @@ This php API deployed on Raspberry Pi and works with Android app [Remote Control
 ## Require enviorment
 
 - Raspberry Pi(Public IP is needed for using with Internet)
-- RF443 Module for Raspberry Pi
+- RF433 Module for Raspberry Pi
 - RF signal compatible receiver(such as door locker, wireless switch, etc.)
 
 ## Getting Started
@@ -27,7 +27,9 @@ Put **mobileAPI.php** at web server's root directory.
 
 Edit **RF Code** and **User**(*Name* and *Password* and allow *Action*)
 
-Call API with [Remote Controller - HTTP API](https://play.google.com/store/apps/details?id=biz.tedc.unlocker)
+Execute codesend needs **sudo**, make sure www-data(or any other user that executes) in sudoer list
+
+Call this API with [Remote Controller - HTTP API](https://play.google.com/store/apps/details?id=biz.tedc.unlocker)
 
 ## Samples
 
@@ -36,7 +38,7 @@ Configuration
 <?php
 // RF code for sending
 $rfCode = '6675618';
-// Change path if 443Util in different path
+// Change path if 433Util in different path
 $binaryPath = '/home/pi/433Utils/RPi_utils/codesend';
 ...
 ?>
