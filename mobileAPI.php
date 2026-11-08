@@ -1,81 +1,78 @@
 <?php
 /*
   mobileAPI.php
-  - A HTTP API for Android app [Remote Controller - HTTP API](https://play.google.com/store/apps/details?id=biz.tedc.unlocker)
+  - HTTP API for a Telegram bot or another HTTP client
   - Author: Ted.C
+
+  Change log:
+    2026/11/08: Remove sudo support
 */
-  
+
 // ======= Edit these configurations =======
-// RF code for sending
-$rfCode = '6675618';
-// Change path if 433Util in different path
-$binaryPath = '/home/pi/433Utils/RPi_utils/codesend';
+$rfCode = '6675618'; // RF code sent by the open action
+$binaryPath = '/usr/local/bin/codesend'; // Change if codesend is installed elsewhere
 
 // ======= Users =======
 $users = [];
-$users['user1']['pw'] = 'u1pw';
-$users['user1']['allow'] = ['ping','open','edit','sususu','action2'];
-$users['user2']['pw'] = 'u2pw';
-$users['user2']['allow'] = ['ping'];
+$users['user1']['pw'] = 'changeme1';
+$users['user1']['allow'] = ['ping', 'open', 'your_action'];
+$users['user2']['pw'] = 'changeme2';
+$users['user2']['allow'] = ['ping', 'open'];
 
-$uid = $_POST['uid'];
-$pwd = $_POST['pwd'];
-$action = $_POST['action'];
-$useSudo = true;
-$serverPwd = 'changeme'; // server password not implemented yet
+// Read POST fields safely. Arrays and missing values are invalid arguments.
+$uid = $_POST['uid'] ?? null;
+$pwd = $_POST['pwd'] ?? null;
+$action = $_POST['action'] ?? null;
+
 /*
-Return :
-  1 : OK
-  2 : Password error
+Return codes:
+  1 : Request accepted
+  2 : Password error or unknown user
   3 : Action denied
-  4 : Argument error
+  4 : Missing or invalid arguments
 */
-// Authenticate
 $allow = 0;
-if(!$action || !$uid || !$pwd){
-  $allow = 4;
-}else{
-  if($pwd === $users[$uid]['pw']){
-    if(in_array($action, $users[$uid]['allow'])){
-      $allow = 1;
-    }else{
-      $allow = 3;
-    }
-  }else{
+
+if (!is_string($uid) || !is_string($pwd) || !is_string($action)
+    || $uid === '' || $pwd === '' || $action === '') {
+    $allow = 4;
+} elseif (!isset($users[$uid]) || $pwd !== $users[$uid]['pw']) {
     $allow = 2;
-  }
+} elseif (in_array($action, $users[$uid]['allow'], true)) {
+    $allow = 1;
+} else {
+    $allow = 3;
 }
-if($allow !== 1){
-  echo $allow;
-  exit;
+
+if ($allow !== 1) {
+    echo $allow;
+    exit;
 }
-//var_dump($_POST);
-switch($action){
-  case 'sususu':
-    // You may edit for your own usage
-    echo "Action not implemented.";
-    break;
-  case 'action2':
-    // You may edit for your own usage, here is sample
-    $rfCode2 = '6675999';
-    $cmd = $binaryPath.' '.$rfCode2.' &';
-    exec($cmd);
-    break;
-  case 'ping':
-    echo 1;
-    break;
-  case 'open':
-    // code 'open' executes send defined rfCode via 433Utils
-    echo 1;
-    $cmd = '';
-    if($useSudo){
-      $cmd .= 'sudo ';
-    }
-    $cmd .= $binaryPath.' '.$rfCode.' &';
-    // echo $cmd;
-    exec($cmd);
-    break;
-  default :
-    echo "Action not implemented.";
-    break;
+
+switch ($action) {
+    case 'ping':
+        echo 1;
+        break;
+
+    case 'open':
+        // Send the configured RF code through 433Utils.
+        echo 1;
+        $cmd = escapeshellarg($binaryPath) . ' '
+            . escapeshellarg($rfCode)
+            . ' > /dev/null 2>&1 &';
+        exec($cmd);
+        break;
+
+    case 'your_action':
+        // Example custom action that sends another RF code.
+        $rfCode2 = '6675999';
+        $cmd = escapeshellarg($binaryPath) . ' '
+            . escapeshellarg($rfCode2)
+            . ' > /dev/null 2>&1 &';
+        exec($cmd);
+        break;
+
+    default:
+        echo 'Action not implemented.';
+        break;
 }
