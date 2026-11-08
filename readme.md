@@ -1,83 +1,51 @@
 # mobileAPI.php
 
-This php API deployed on Raspberry Pi and works with Android app [Remote Controller - HTTP API](https://play.google.com/store/apps/details?id=biz.tedc.unlocker)
+A small PHP HTTP API for triggering 433 MHz RF actions on a Linux host. It was originally used with a Raspberry Pi and can now be called by a Telegram bot or another HTTP client. The bot itself is not included in this repository; it sends HTTP POST requests to this API.
 
-## Enviorment
+## Architecture
 
-![enviorment chart](https://cloud.githubusercontent.com/assets/7614818/21448596/91189216-c91f-11e6-9674-0f5946f59978.png)
+![Telegram bot sends an HTTP request to mobileAPI.php, which triggers an RF transmitter](mobileAPI.png)
 
-## Features
+## Requirements
 
-- Receive Web HTTP Calls and send RF433Mhz wireless signal.
-- Account and password.
-- User defines own Action code
-- Extensible and simple PHP code
+- Linux host with PHP 8 and a web server such as Nginx or Apache.
+- A 433 MHz RF transmitter connected to the host, plus a compatible receiver.
+- `codesend` from 433Utils installed and executable by the web server account.
+- HTTPS when the API is reachable over a network.
 
-## Require enviorment
+A Raspberry Pi is a convenient host when using GPIO-connected RF hardware. Other Linux hosts can be used with compatible transmitter hardware and a suitable `codesend` binary.
 
-- Raspberry Pi(Public IP is needed for using with Internet)
-- RF433 Module for Raspberry Pi
-- RF signal compatible receiver(such as door locker, wireless switch, etc.)
+## Setup
 
-## Getting Started
+1. Configure the RF code, `codesend` path, user credentials, and allowed actions near the top of `mobileAPI.php`.
+2. Place `mobileAPI.php` in a directory served by your web server.
+3. Grant the web server account the permissions it needs to access the RF transmitter and run `codesend`. This version does not use `sudo`.
+4. Configure your Telegram bot or other client to send HTTPS POST requests to the API endpoint.
 
-Setup your Raspberry Pi with Internet connectivity and Nginx web server(or any webserver).
+## HTTP API
 
-Put **mobileAPI.php** at web server's root directory.
+Send `application/x-www-form-urlencoded` POST fields:
 
-Edit **RF Code** and **User**(*Name* and *Password* and allow *Action*)
+| Field | Description |
+| --- | --- |
+| `uid` | User name configured in `$users` |
+| `pwd` | Password configured for that user |
+| `action` | An action allowed for that user |
 
-Execute codesend needs **sudo**, make sure www-data(or any other user that executes) in sudoer list
+Actions included in this example:
 
-Call this API with [Remote Controller - HTTP API](https://play.google.com/store/apps/details?id=biz.tedc.unlocker)
+- `ping` — check that the credentials and action are accepted.
+- `open` — send the configured `$rfCode` using `codesend`.
+- `your_action` — example custom action that sends a second RF code; rename or replace it for your use.
 
-## Samples
+Responses are plain text: `1` means the request was accepted; `2` means the user is unknown or the password is incorrect; `3` means the action is not allowed; `4` means a required field is missing or invalid. The RF command runs in the background, so response `1` does not confirm that the receiver got the signal.
 
-Configuration
-```php
-<?php
-// RF code for sending
-$rfCode = '6675618';
-// Change path if 433Util in different path
-$binaryPath = '/home/pi/433Utils/RPi_utils/codesend';
-...
-?>
-```
+## Security
 
-Action
-```php
-<?php
-  ...
-  case 'action2':
-    // You may edit for your own usage, here is sample
-    $rfCode2 = '6675999'; // Send another code
-    $cmd = $binaryPath.' '.$rfCode2.' &';
-    exec($cmd);
-    break;
-  case 'action3':
-    // You may edit for your own usage, here is sample
-    $cmd = 'Do something with your RPi';
-    exec($cmd);
-    break;
-...
-?>
-```
+- Use HTTPS so credentials are not sent in clear text.
+- Restrict access to the endpoint where possible, and use unique credentials with only the actions each user needs.
+- Do not commit real passwords to a public repository. Keep deployment credentials in a private configuration file or inject them from the server environment.
 
-## Known Issue
+## RF reliability
 
-If it is not stable with RF communication, send command **twice at once** is recommended.
-
-(Make sure using this only when no problem if receives twice command.)
-
-```php
-<?php
-...
-exec($cmd);
-exec($cmd);
-...
-?>
-```
-
-## Contribution
-
-If you find a bug or want to contribute to the code or documentation, you can help by submitting an issue or a pull request.
+If RF reception is unreliable, improving antenna placement or repeating a transmission may help. Only repeat an action when the receiver can safely handle duplicate signals; a duplicate may toggle a switch or lock twice.
