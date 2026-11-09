@@ -6,6 +6,13 @@ A small PHP HTTP API for triggering 433 MHz RF actions on a Linux host. It was o
 
 ![Telegram bot sends an HTTP request to mobileAPI.php, which triggers an RF transmitter](mobileAPI.png)
 
+## Related Projects
+
+- This project: [Nununene/mobileAPI](https://github.com/Nununene/mobileAPI)
+- Door Opener bot(Telegram bot): [Nununene/door-opener-bot](https://github.com/Nununene/door-opener-bot)
+
+`Door opener bot` is a Telegram bot that can communicate with this API and provide door opening or authentication functionality.
+
 ## Requirements
 
 - Linux host with PHP 8 and a web server such as Nginx or Apache.
